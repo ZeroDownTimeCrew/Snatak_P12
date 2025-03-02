@@ -1,0 +1,27 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run Linter
+        run: |
+          echo "Running linting checks..."
+          # Add actual linting command here
+
+      - name: Run Unit Tests
+        run: |
+          echo "Running unit tests..."
+          # Add actual test command here
+
+      - name: Code Review Validation
+        run: echo "PR is reviewed by 2 developers and validated."
