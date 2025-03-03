@@ -10,8 +10,11 @@ pipeline {
         stage('PR Validation') {
             steps {
                 script {
-                    def branchName = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
-                    
+                    // Get the actual source branch name
+                    def branchName = sh(script: "git branch -r --contains HEAD | grep -o 'origin/.*' | cut -d '/' -f2-", returnStdout: true).trim()
+
+                    echo "🔍 Detected Branch: ${branchName}"
+
                     if (!branchName.startsWith('feature-')) {
                         error("❌ PR validation failed: Branch name must start with 'feature-'")
                     } else {
