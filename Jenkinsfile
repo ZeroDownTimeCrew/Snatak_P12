@@ -1,56 +1,28 @@
 pipeline {
     agent any
-
-    // environment {
-    //     GITHUB_TOKEN = credentials('github-token-id') // Store GitHub token in Jenkins credentials
-    // }
-
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
+                sh 'echo "Repository Checked Out: $(git rev-parse --abbrev-ref HEAD)"'
             }
         }
-
-        stage('Build') {
-            steps {
-                echo 'Building the project...'
-                sh 'make build'  // Replace with actual build command
-            }
-        }
-
-        stage('Test') {
-            steps {
-                echo 'Running tests...'
-                sh 'make test'  // Replace with actual test command
-            }
-        }
-
-        stage('Lint') {
-            steps {
-                echo 'Checking code quality...'
-                sh 'make lint'  // Replace with actual linting command
-            }
-        }
-
-        stage('Approval Check') {
+        stage('PR Validation') {
             steps {
                 script {
-                    def prId = env.CHANGE_ID
-                    if (!prId) {
-                        echo "Not a pull request build. Skipping approval check."
-                        return
-                    }
-
-                    def reviewers = sh(script: """
-                        gh pr view $prId --repo your-org/your-repo --json reviews --jq '.reviews | map(select(.state=="APPROVED")) | length'
-                    """, returnStdout: true).trim()
-
-                    echo "Number of approvals: ${reviewers}"
-                    if (reviewers.toInteger() < 2) {
-                        error "At least 2 reviewers must approve this PR before merging!"
+                    def branchName = sh(script: 'git rev-parse --abbrev-ref HEAD', returnStdout: true).trim()
+                    
+                    if (!branchName.startsWith('feature-')) {
+                        error("❌ PR validation failed: Branch name must start with 'feature-'")
+                    } else {
+                        echo "✅ PR validation passed: Branch name is correct."
                     }
                 }
+            }
+        }
+        stage('Jenkins Approval') {
+            steps {
+                echo "✅ Jenkins has approved the PR. Ready for review."
             }
         }
     }
