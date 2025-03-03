@@ -1,9 +1,9 @@
 pipeline {
     agent any
 
-    environment {
-        GITHUB_TOKEN = credentials('github-token-id') // Store GitHub token in Jenkins credentials
-    }
+    // environment {
+    //     GITHUB_TOKEN = credentials('github-token-id') // Store GitHub token in Jenkins credentials
+    // }
 
     stages {
         stage('Checkout') {
