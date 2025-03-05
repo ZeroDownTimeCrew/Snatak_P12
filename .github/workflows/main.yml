@@ -1,0 +1,38 @@
+name: PR Validation
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  pr-validation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Validate PR Source Branch
+        run: |
+          BRANCH_NAME=$(jq -r .pull_request.head.ref "$GITHUB_EVENT_PATH")
+          echo "Source branch: $BRANCH_NAME"
+          if [[ ! "$BRANCH_NAME" =~ ^feature- ]]; then
+            echo "❌ PR source branch must start with 'feature-'. Found: $BRANCH_NAME"
+            exit 1
+          fi
+          echo "✅ PR source branch is valid."
+      - name: Check PR Approvals
+        run: |
+          PR_NUMBER=$(jq -r .pull_request.number "$GITHUB_EVENT_PATH")
+          APPROVALS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/pulls/$PR_NUMBER/reviews" | 
+            jq '[.[] | select(.state=="APPROVED")] | length')
+          echo "PR has $APPROVALS approvals."
+          if [[ "$APPROVALS" -lt 2 ]]; then
+            echo "❌ PR must have at least 2 approvals. Failing validation."
+            exit 1
+          fi
+          echo "✅ PR has enough approvals."
+      - name: Code Review Validation
+        run: echo "PR is reviewed by 2 developers and validated."
