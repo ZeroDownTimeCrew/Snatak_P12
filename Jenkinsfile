@@ -28,6 +28,5 @@ pipeline {
                 echo "✅ Jenkins has approved the PR. Ready for review."
             }
         }
-    }
-    
+    } 
 }
